@@ -1,3 +1,2 @@
-cd /home/bitnami/todo
-npm install
-node app
+systemctl daemon-reload 
+systemctl start todo

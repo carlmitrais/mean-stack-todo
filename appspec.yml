@@ -3,6 +3,8 @@ os: linux
 files:
   - source: /
     destination: /home/bitnami/todo
+  - source: /todo.service
+    destination: /etc/systemd/system/
 hooks:
   ApplicationStart:
     - location: start_service
