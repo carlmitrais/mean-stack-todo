@@ -12,7 +12,7 @@ var express = require('express')
 var app = express();
 
 var Mongoose = require('mongoose');
-var db = Mongoose.createConnection('localhost', 'mytestapp');
+var db = Mongoose.createConnection('mongodb://root:bitnami@localhost/admin');
 
 var TodoSchema = require('./models/Todo.js').TodoSchema;
 var Todo = db.model('todos', TodoSchema);
