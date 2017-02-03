@@ -4,7 +4,9 @@ import groovy.json.JsonSlurperClassic
 node {
     env.AWS_DEFAULT_REGION = 'ap-southeast-1'
 	
-	String trainerName = 'fajar'
+	def applicationName = 'fajar-app' //change me
+	def deploymentGroupName = 'fajar-app' // change me
+	def s3BucketName = 'deployment-cdc'
 
 	//Cleanup workspace
 	deleteDir()
@@ -17,7 +19,7 @@ node {
 	stage("Sonar Analyze") {
 		def scannerHome = tool 'default';
 	    withSonarQubeEnv('default') {
-	      sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${trainerName} -Dsonar.sources=."
+	      sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=${deploymentGroupName} -Dsonar.sources=."
 	    }
 	}
 	
@@ -30,14 +32,15 @@ node {
 	        
 	        
 
-	        //Zip artifact
-	        sh("zip -r ${env.JOB_NAME}.zip .")
+	            //Zip artifact
+		def artifactName = "${applicationName}-${deploymentGroupName}"
+	        sh("zip -r ${artifactName}.zip .")
 	        
 	        //Upload artifact to S3
-	        sh("aws s3 cp ${env.JOB_NAME}.zip s3://deployment-cdc/${env.JOB_NAME}.zip")
+		sh("aws s3 cp ${artifactName}.zip s3://${s3BucketName}/${artifactName}.zip")
 
 	        //Create Deployment
-	        def result = sh(returnStdout:true, script: "aws deploy create-deployment --application-name CDC-deploy --deployment-group-name ${trainerName} --s3-location bucket=deployment-cdc,bundleType=zip,key=${env.JOB_NAME}.zip")	        
+	        def result = sh(returnStdout:true, script: "aws deploy create-deployment --application-name ${applicationName} --deployment-group-name ${deploymentGroupName} --s3-location bucket=${s3BucketName},bundleType=zip,key=${artifactName}.zip")	        
 	        def json = parseJson(result)
 	        String deploymentId = json.deploymentId
 
